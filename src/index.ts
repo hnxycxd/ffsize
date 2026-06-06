@@ -1,13 +1,49 @@
 #!/usr/bin/env node
 
-const fs = require('fs').promises
-const path = require('path')
+import { promises as fs } from 'node:fs'
+import * as path from 'node:path'
+
+/**
+ * 树节点接口，表示文件或文件夹的信息
+ */
+interface TreeItem {
+  /** 节点名称 */
+  name: string
+  /** 节点大小（字节） */
+  size: number
+  /** 是否为文件夹 */
+  isDirectory: boolean
+  /** 子节点列表 */
+  children: TreeItem[]
+}
+
+/**
+ * 构建目录树的函数参数接口
+ */
+interface BuildTreeParams {
+  /** 当前处理的路径 */
+  itemPath: string
+  /** 当前递归深度 */
+  currentDepth: number
+  /** 最大递归深度限制 */
+  maxDepth: number
+}
+
+/**
+ * 打印树节点的函数参数接口
+ */
+interface PrintTreeItemParams {
+  /** 待打印的树节点 */
+  item: TreeItem
+  /** 当前缩进层级 */
+  indentLevel: number
+}
 
 // 解析并获取命令行参数（路径，默认为当前目录，以及可选的深度 -d 参数或 --all 参数）
-let targetPath = '.'
-let maxDepth = 1 // 默认显示深度为 1 层
+let targetPath: string = '.'
+let maxDepth: number = 1 // 默认显示深度为 1 层
 
-const args = process.argv.slice(2)
+const args: string[] = process.argv.slice(2)
 for (let i = 0; i < args.length; i++) {
   const arg = args[i]
   if (arg === '-d') {
@@ -16,38 +52,42 @@ for (let i = 0; i < args.length; i++) {
       console.error('❌ error: -d option requires a depth (1, 2, 3)')
       process.exit(1)
     }
-    const depth = parseInt(nextArg, 10)
+    const depth = Number.parseInt(nextArg, 10)
     if (isNaN(depth) || depth < 1 || depth > 3) {
       console.error('❌ error: -d depth must be 1, 2 or 3')
       process.exit(1)
     }
     maxDepth = depth
     i++ // 跳过数值参数
-  } else if (arg.startsWith('-d=')) {
+  }
+  else if (arg.startsWith('-d=')) {
     const depthVal = arg.split('=')[1]
-    const depth = parseInt(depthVal, 10)
+    const depth = Number.parseInt(depthVal, 10)
     if (isNaN(depth) || depth < 1 || depth > 3) {
       console.error('❌ error: -d depth must be 1, 2 or 3')
       process.exit(1)
     }
     maxDepth = depth
-  } else if (arg === '--all' || arg === '-a' || arg === '-all') {
+  }
+  else if (arg === '--all' || arg === '-a' || arg === '-all') {
     maxDepth = Infinity
-  } else if (arg.startsWith('-')) {
+  }
+  else if (arg.startsWith('-')) {
     console.error(`❌ error: unknown option ${arg}`)
     process.exit(1)
-  } else {
+  }
+  else {
     // 非 - 开头的参数视为路径
     targetPath = arg
   }
 }
 
-const absolutePath = path.resolve(targetPath)
+const absolutePath: string = path.resolve(targetPath)
 
 /**
  * 获取单个文件的大小（字节）
  */
-async function getFileSize(filePath) {
+async function getFileSize(filePath: string): Promise<number> {
   const stat = await fs.stat(filePath)
   return stat.size
 }
@@ -55,14 +95,15 @@ async function getFileSize(filePath) {
 /**
  * 递归获取文件夹总大小（字节）
  */
-async function getFolderSize(folderPath) {
+async function getFolderSize(folderPath: string): Promise<number> {
   let total = 0
   const entries = await fs.readdir(folderPath, { withFileTypes: true })
   for (const entry of entries) {
     const fullPath = path.join(folderPath, entry.name)
     if (entry.isDirectory()) {
       total += await getFolderSize(fullPath)
-    } else {
+    }
+    else {
       const stat = await fs.stat(fullPath)
       total += stat.size
     }
@@ -77,7 +118,7 @@ async function getFolderSize(folderPath) {
  * 3. 在 1GB 跟 1TB 之间，单位用 GB
  * 4. 再往上以此类推使用 TB
  */
-function formatSize(bytes) {
+function formatSize(bytes: number): string {
   // 定义字节单位的基础大小（KILO = 1024 字节）
   const KILO = 1024
   const MEGA = KILO * 1024
@@ -86,25 +127,25 @@ function formatSize(bytes) {
 
   // 低于 1MB，用 KB 显示
   if (bytes < MEGA) {
-    return (bytes / KILO).toFixed(2) + ' KB'
+    return `${(bytes / KILO).toFixed(2)} KB`
   }
   // 在 1MB 跟 1GB 之间，用 MB 显示
   if (bytes < GIGA) {
-    return (bytes / MEGA).toFixed(2) + ' MB'
+    return `${(bytes / MEGA).toFixed(2)} MB`
   }
   // 在 1GB 跟 1TB 之间，用 GB 显示
   if (bytes < TERA) {
-    return (bytes / GIGA).toFixed(2) + ' GB'
+    return `${(bytes / GIGA).toFixed(2)} GB`
   }
   // 1TB 及以上，用 TB 显示
-  return (bytes / TERA).toFixed(2) + ' TB'
+  return `${(bytes / TERA).toFixed(2)} TB`
 }
 
 /**
  * 递归构建目录树
  * 函数有三个参数，采用对象形式传递以满足规范
  */
-async function buildTree({ itemPath, currentDepth, maxDepth }) {
+async function buildTree({ itemPath, currentDepth, maxDepth }: BuildTreeParams): Promise<TreeItem> {
   // 获取当前项的状态信息
   const stat = await fs.stat(itemPath)
 
@@ -123,7 +164,7 @@ async function buildTree({ itemPath, currentDepth, maxDepth }) {
     const size = await getFolderSize(itemPath)
     return {
       name: path.basename(itemPath),
-      size: size,
+      size,
       isDirectory: true,
       children: [],
     }
@@ -138,7 +179,7 @@ async function buildTree({ itemPath, currentDepth, maxDepth }) {
     return await buildTree({
       itemPath: fullPath,
       currentDepth: currentDepth + 1,
-      maxDepth: maxDepth,
+      maxDepth,
     })
   })
 
@@ -163,7 +204,7 @@ async function buildTree({ itemPath, currentDepth, maxDepth }) {
  * 递归打印树节点
  * 函数有两个参数，采用对象形式传递以满足规范
  */
-function printTreeItem({ item, indentLevel }) {
+function printTreeItem({ item, indentLevel }: PrintTreeItemParams): void {
   // 区分文件夹和文件前缀图标
   const typeMark = item.isDirectory ? '📁 ' : '📄 '
 
@@ -174,12 +215,12 @@ function printTreeItem({ item, indentLevel }) {
   const maxNameLength = Math.max(0, 36 - indentLevel * 2)
 
   // 对超长的文件名进行截断处理
-  const truncatedName =
-    item.name.length > maxNameLength
-      ? item.name.slice(0, Math.max(0, maxNameLength - 3)) + '...'
+  const truncatedName
+    = item.name.length > maxNameLength
+      ? `${item.name.slice(0, Math.max(0, maxNameLength - 3))}...`
       : item.name
 
-  // 组合成带有缩进和图标的名称显示格式
+  // 组合成带有缩进 and 图标的名称显示格式
   const nameDisplay = indent + typeMark + truncatedName
 
   // 格式化输出：名字栏左对齐占 40 字符，大小栏右对齐占 12 字符
@@ -196,13 +237,13 @@ function printTreeItem({ item, indentLevel }) {
 /**
  * 主函数：根据配置深度列出 targetPath 下的层级子项及大小
  */
-async function main() {
+async function main(): Promise<void> {
   try {
     // 检查路径是否存在
     await fs.access(absolutePath)
     const stat = await fs.stat(absolutePath)
 
-    let items = []
+    let items: TreeItem[] = []
     if (stat.isDirectory()) {
       const entries = await fs.readdir(absolutePath, { withFileTypes: true })
       // 并行计算并构建第一层直接子项及其层级子树（首层 currentDepth 传入 1）
@@ -211,14 +252,15 @@ async function main() {
         return await buildTree({
           itemPath: fullPath,
           currentDepth: 1,
-          maxDepth: maxDepth,
+          maxDepth,
         })
       })
       items = await Promise.all(promises)
-    } else {
+    }
+    else {
       // 如果传入的是文件，只显示该文件的大小，无需子项树
       const size = await getFileSize(absolutePath)
-      items = [{ name: path.basename(absolutePath), size: size, isDirectory: false, children: [] }]
+      items = [{ name: path.basename(absolutePath), size, isDirectory: false, children: [] }]
     }
 
     // 将首层直接子项按大小降序排序（大的在前）
@@ -238,7 +280,8 @@ async function main() {
     const totalSize = items.reduce((sum, item) => sum + item.size, 0)
     console.log('-'.repeat(55))
     console.log('total'.padEnd(40) + formatSize(totalSize).padStart(12))
-  } catch (err) {
+  }
+  catch (err: any) {
     console.error(`❌ error: ${err.message}`)
     process.exit(1)
   }
