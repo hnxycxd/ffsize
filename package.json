@@ -1,6 +1,6 @@
 {
   "name": "dsize",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Show size of each file/folder under a given path",
   "bin": {
     "dsize": "./dist/index.js"
@@ -28,6 +28,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hnxycxd/dsize.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   },
   "author": "chengxudong",
   "license": "MIT",
