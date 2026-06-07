@@ -1,6 +1,6 @@
 {
   "name": "ffsize",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Show size of each file/folder under a given path",
   "bin": {
     "ffsize": "./dist/index.js"
@@ -23,7 +23,8 @@
     "file/folder size",
     "file size",
     "folder size",
-    "ffsize"
+    "ffsize",
+    "dsize"
   ],
   "repository": {
     "type": "git",
