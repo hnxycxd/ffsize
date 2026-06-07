@@ -2,36 +2,15 @@
 
 English · [简体中文](./README-zh_CN.md)
 
-`dsize` is a lightweight, efficient CLI tool that recursively displays the size of each file and folder under a given path, sorted by size in descending order — helping you quickly identify disk space hogs.
+`dsize` shows the size of each file and folder under a given path, sorted by size in descending order, and supports depth control.
 
-## 🌟 Features
-
-- 🚀 **Parallel computation** — Uses `Promise.all` to read files and directories in parallel, greatly speeding up calculation.
-- 📁 **Hierarchical display** — Clearly presents directory structure in a tree-like table format.
-- 📊 **Auto units** — Automatically switches between `KB`, `MB`, `GB`, and `TB` based on file size.
-- ⚙️ **Depth control** — Limit display depth with the `-d` flag, or show the full tree with `--all`.
-
-## 📖 Usage
+## Usage
 
 ```bash
-# Scan the current directory (default: 1 level deep)
 npx dsize
-
-# Scan a specified directory
-npx dsize /path/to/directory
-
-# Specify display depth (supports 1, 2, 3)
-npx dsize -d 2
-# or
-npx dsize -d=3
-
-# Show all levels of sub-files and sub-folders
-npx dsize --all
-# or
-npx dsize -a
 ```
 
-### 💡 Example Output
+You will see
 
 ```text
 📂 path: /path/to/directory
@@ -50,6 +29,33 @@ name                                            size
 total                                       25.67 MB
 ```
 
-## 📄 License
+You can also
+
+```bash
+# Show src directory
+npx dsize src
+
+# Show src directory with 2 levels of depth
+npx dsize src -d 2
+
+# Show all levels in the current directory
+npx dsize --all
+# or
+npx dsize -a
+```
+
+Global installation
+
+```bash
+npm install -g dsize
+```
+
+Use
+
+```bash
+dsize src
+```
+
+## License
 
 [MIT](LICENSE)
