@@ -1,6 +1,6 @@
 {
   "name": "ffsize",
-  "version": "0.0.5",
+  "version": "0.0.1",
   "description": "Show size of each file/folder under a given path",
   "bin": {
     "ffsize": "./dist/index.js"
