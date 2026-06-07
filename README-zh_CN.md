@@ -1,13 +1,13 @@
-# dsize
+# ffsize
 
 [English](./README.md) · 中文
 
-`dsize` 用于展示给定路径下每个文件和文件夹的大小，并按大小降序排列，支持深度控制。
+`ffsize` 用于展示给定路径下每个文件和文件夹的大小，并按大小降序排列，支持深度控制。
 
 ## 用法
 
 ```bash
-npx dsize
+npx ffsize
 ```
 
 你会看到
@@ -33,27 +33,27 @@ total                                       25.67 MB
 
 ```bash
 # 查看 src 目录
-npx dsize src
+npx ffsize src
 
 # 查看 src 目录下 2 层深度
-npx dsize src -d 2
+npx ffsize src -d 2
 
 # 查看当前目录下所有层级
-npx dsize --all
+npx ffsize --all
 # 或者
-npx dsize -a
+npx ffsize -a
 ```
 
 全局安装
 
 ```bash
-npm install -g dsize
+npm install -g ffsize
 ```
 
 使用
 
 ```bash
-dsize src
+ffsize src
 ```
 
 ## License

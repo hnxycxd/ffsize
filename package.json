@@ -1,9 +1,9 @@
 {
-  "name": "dsize",
-  "version": "0.0.4",
+  "name": "ffsize",
+  "version": "0.0.5",
   "description": "Show size of each file/folder under a given path",
   "bin": {
-    "dsize": "./dist/index.js"
+    "ffsize": "./dist/index.js"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -20,14 +20,14 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
+    "file/folder size",
     "file size",
-    "directory size",
     "folder size",
-    "fsize"
+    "ffsize"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hnxycxd/dsize.git"
+    "url": "git+https://github.com/hnxycxd/ffsize.git"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

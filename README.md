@@ -1,13 +1,13 @@
-# dsize
+# ffsize
 
 English · [简体中文](./README-zh_CN.md)
 
-`dsize` shows the size of each file and folder under a given path, sorted by size in descending order, and supports depth control.
+`ffsize` shows the size of each file and folder under a given path, sorted by size in descending order, and supports depth control.
 
 ## Usage
 
 ```bash
-npx dsize
+npx ffsize
 ```
 
 You will see
@@ -33,27 +33,27 @@ You can also
 
 ```bash
 # Show src directory
-npx dsize src
+npx ffsize src
 
 # Show src directory with 2 levels of depth
-npx dsize src -d 2
+npx ffsize src -d 2
 
 # Show all levels in the current directory
-npx dsize --all
+npx ffsize --all
 # or
-npx dsize -a
+npx ffsize -a
 ```
 
 Global installation
 
 ```bash
-npm install -g dsize
+npm install -g ffsize
 ```
 
 Use
 
 ```bash
-dsize src
+ffsize src
 ```
 
 ## License
