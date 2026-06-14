@@ -1,0 +1,51 @@
+name: Publish Package to npmjs
+
+# 触发条件：当有新标签（tag）被推送时触发
+on:
+  push:
+    tags:
+      - 'v*' # 匹配所有以 'v' 开头的标签，如 v1.0.0, v1.2.3
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # 配置 OIDC 信任发布所需的权限
+    permissions:
+      contents: write # 允许创建 GitHub Release
+      id-token: write # 允许获取 OIDC token（信任发布所需）
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # 获取完整历史，以便正确生成 Release Notes
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        # 推荐使用 npm ci 以获得更稳定、更快的安装，它严格遵循 package-lock.json
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm run build
+
+      - name: Publish to npm
+        run: pnpm publish --provenance --access public
+        # 信任发布会自动使用 OIDC 进行认证，因此无需配置 NODE_AUTH_TOKEN 环境变量
+        # 如果仍使用传统的 NPM_TOKEN 方式，则需取消下面一行的注释
+        # env:
+        #   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true # 自动根据 commit 和 PR 生成日志
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
