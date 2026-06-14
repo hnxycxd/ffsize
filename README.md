@@ -13,7 +13,8 @@ npx ffsize
 You will see
 
 ```text
-📂 path: /path/to/directory
+progress: 8/8
+path: /path/to/directory
 
 name                                            size
 -------------------------------------------------------
