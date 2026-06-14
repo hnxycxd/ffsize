@@ -30,31 +30,25 @@ name                                            size
 total                                       25.67 MB
 ```
 
-You can also
-
-```bash
-# Show src directory
-npx ffsize src
-
-# Show src directory with 2 levels of depth
-npx ffsize src -d 2
-
-# Show all levels in the current directory
-npx ffsize --all
-# or
-npx ffsize -a
-```
-
 Global installation
 
 ```bash
 npm install -g ffsize
 ```
 
-Use
+You can also
 
 ```bash
+# Show src directory
 ffsize src
+
+# Show src directory with 2 levels of depth
+ffsize src -d 2
+
+# Show all levels in the current directory
+ffsize --all
+# or
+ffsize -a
 ```
 
 ## License

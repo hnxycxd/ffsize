@@ -30,6 +30,12 @@ name                                            size
 total                                       25.67 MB
 ```
 
+全局安装
+
+```bash
+npm install -g ffsize
+```
+
 你还可以
 
 ```bash
@@ -43,18 +49,6 @@ npx ffsize src -d 2
 npx ffsize --all
 # 或者
 npx ffsize -a
-```
-
-全局安装
-
-```bash
-npm install -g ffsize
-```
-
-使用
-
-```bash
-ffsize src
 ```
 
 ## License
