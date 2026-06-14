@@ -37,7 +37,7 @@ jobs:
         run: pnpm run build
 
       - name: Publish to npm
-        run: pnpm publish --provenance --access public
+        run: pnpm publish --provenance --access public --no-git-checks
         # 信任发布会自动使用 OIDC 进行认证，因此无需配置 NODE_AUTH_TOKEN 环境变量
         # 如果仍使用传统的 NPM_TOKEN 方式，则需取消下面一行的注释
         # env:
