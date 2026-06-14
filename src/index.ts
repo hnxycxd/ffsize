@@ -343,6 +343,43 @@ async function buildTree({
 }
 
 /**
+ * 计算字符串在终端中的视觉显示宽度
+ * 中文、日文、韩文等全角字符占 2 列，emoji 占 2 列，ASCII 占 1 列
+ */
+function displayWidth(s: string): number {
+  let width = 0
+  for (const ch of s) {
+    const code = ch.codePointAt(0)!
+    if (
+      (code >= 0x1100 && code <= 0x115F) || // Hangul Jamo
+      (code >= 0x2E80 && code <= 0xA4CF && code !== 0x303F) || // CJK
+      (code >= 0xAC00 && code <= 0xD7A3) || // Hangul Syllables
+      (code >= 0xF900 && code <= 0xFAFF) || // CJK Compatibility Ideographs
+      (code >= 0xFE10 && code <= 0xFE19) || // Vertical forms
+      (code >= 0xFE30 && code <= 0xFE6F) || // CJK Compatibility Forms
+      (code >= 0xFF01 && code <= 0xFF60) || // Fullwidth Forms
+      (code >= 0xFFE0 && code <= 0xFFE6) || // Fullwidth Signs
+      (code >= 0x1F004 && code <= 0x1F9FF) || // Emoji
+      (code >= 0x20000 && code <= 0x2FFFF) // CJK Extension B+
+    ) {
+      width += 2
+    } else {
+      width += 1
+    }
+  }
+  return width
+}
+
+/**
+ * 将字符串填充到指定的终端视觉宽度
+ */
+function padEndVisual(s: string, targetWidth: number): string {
+  const currentWidth = displayWidth(s)
+  const padding = Math.max(0, targetWidth - currentWidth)
+  return s + ' '.repeat(padding)
+}
+
+/**
  * 递归打印树节点
  * 函数有两个参数，采用对象形式传递以满足规范
  */
@@ -353,20 +390,31 @@ function printTreeItem({ item, indentLevel }: PrintTreeItemParams): void {
   // 根据深度层级在名字前加缩进，每一层级缩进 2 个空格
   const indent = ' '.repeat(indentLevel * 2)
 
-  // 名字可用的最大显示字符长度（扣除缩进量，并保证不越界）
-  const maxNameLength = Math.max(0, 36 - indentLevel * 2)
+  // 名字可用的最大视觉宽度（扣除缩进和图标，并保证不越界）
+  // typeMark（"📁 "/"📄 "）视觉宽度恒为 3（emoji 占 2 列 + 空格占 1 列）
+  const maxNameWidth = Math.max(0, 40 - indentLevel * 2 - 3)
 
-  // 对超长的文件名进行截断处理
-  const truncatedName
-    = item.name.length > maxNameLength
-      ? `${item.name.slice(0, Math.max(0, maxNameLength - 3))}...`
-      : item.name
+  // 对超长的文件名进行视觉宽度截断处理
+  let truncatedName = item.name
+  if (displayWidth(item.name) > maxNameWidth) {
+    const ellipsis = '...'
+    const ellipsisWidth = displayWidth(ellipsis)
+    let w = 0
+    let i = 0
+    for (const ch of item.name) {
+      const cw = displayWidth(ch)
+      if (w + cw + ellipsisWidth > maxNameWidth) break
+      w += cw
+      i += ch.length
+    }
+    truncatedName = item.name.slice(0, i) + ellipsis
+  }
 
-  // 组合成带有缩进 and 图标的名称显示格式
+  // 组合成带有缩进和图标的名称显示格式
   const nameDisplay = indent + typeMark + truncatedName
 
-  // 格式化输出：名字栏左对齐占 40 字符，大小栏右对齐占 12 字符
-  console.log(nameDisplay.padEnd(40) + formatSize(item.size).padStart(12))
+  // 格式化输出：名字栏左对齐占 40 视觉宽度，大小栏右对齐占 12 字符
+  console.log(padEndVisual(nameDisplay, 40) + formatSize(item.size).padStart(12))
 
   // 如果包含被遍历并保存的子节点，按升序增加深度并递归打印
   if (item.children && item.children.length > 0) {
@@ -402,7 +450,7 @@ async function main(): Promise<void> {
           maxDepth,
         })
         completedCount++
-        process.stderr.write(`\r⏳ progress: ${completedCount}/${totalCount}`)
+        process.stderr.write(`\rprogress: ${completedCount}/${totalCount}`)
         return result
       })
       items = await Promise.all(promises)
@@ -417,7 +465,7 @@ async function main(): Promise<void> {
     items.sort((a, b) => b.size - a.size)
 
     // 输出表格
-    console.log(`📂 path: ${absolutePath}\n`)
+    console.log(`path: ${absolutePath}\n`)
     console.log('name'.padEnd(40) + 'size'.padStart(12))
     console.log('-'.repeat(55))
 
